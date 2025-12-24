@@ -1467,7 +1467,7 @@ MonoBehaviour:
   - {fileID: 1147139503}
   - {fileID: 1098965761}
   - {fileID: 532199236}
-  _defaultPathIndex: 0
+  _defaultPathIndex: 1
 --- !u!1 &1444682865
 GameObject:
   m_ObjectHideFlags: 0

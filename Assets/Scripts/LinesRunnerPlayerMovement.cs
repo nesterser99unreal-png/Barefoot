@@ -11,8 +11,17 @@ public class LinesRunnerPlayerMovement : MonoBehaviour
 
     private int _currentPathIndex;
 
-    private void Awake() => 
+    private void Awake()
+    {
+        if (_defaultPathIndex < 0 || _defaultPathIndex >= _paths.Count)
+        {
+            Debug.LogError($"Default path index {_defaultPathIndex} is out of bounds of paths list size {_paths.Count}");
+            return;
+        }
+        
         _currentPathIndex = _defaultPathIndex;
+        _splineAnimate.Container = _paths[_currentPathIndex];
+    }
 
     public void TurnLeft(CallbackContext context)
     {
