@@ -10,6 +10,7 @@ public class LinesRunnerPlayerMovement : MonoBehaviour
     [SerializeField] private List<LineRunnerPathData> _paths;
     [SerializeField] private int _defaultPathIndex;
     [SerializeField] private Animator _animator;
+    [SerializeField] private Rigidbody _rigidbody;
     
     [SerializeField] private AnimationClip _jumpAnimationClip;
     [SerializeField] private float _jumpHeight = 1.5f;
@@ -17,6 +18,7 @@ public class LinesRunnerPlayerMovement : MonoBehaviour
     private readonly int _jumpHash = Animator.StringToHash("Jump");
     
     private int _currentPathIndex;
+    private int _currentSplineIndex;
     private bool _isMoving;
     
     private Tweener _moveTweener;
@@ -30,8 +32,18 @@ public class LinesRunnerPlayerMovement : MonoBehaviour
         }
         
         _currentPathIndex = _defaultPathIndex;
+        _rigidbody.useGravity = false;
         if (_paths[_currentPathIndex] != null && _paths[_currentPathIndex].SplineContainer != null)
             _splineAnimate.Container = _paths[_currentPathIndex].SplineContainer;
+    }
+
+    private void Update()
+    {
+        if (_currentSplineIndex >= _paths[_currentPathIndex].GetCurrentSplineIndex()) 
+            return;
+        
+        _rigidbody.useGravity = true;
+        _splineAnimate.enabled = false;
     }
 
     public void TurnLeft(CallbackContext context)
@@ -102,12 +114,12 @@ public class LinesRunnerPlayerMovement : MonoBehaviour
         transform.position = finalTargetPosition;
         
         _currentPathIndex = targetPathIndex;
+        _currentSplineIndex = _paths[_currentPathIndex].GetCurrentSplineIndex();
+        
         if (_paths[_currentPathIndex] != null && _paths[_currentPathIndex].SplineContainer != null)
             _splineAnimate.Container = _paths[_currentPathIndex].SplineContainer;
 
         _isMoving = false;
-    
-        
     }
 
     private void TryKillJumpTweener()

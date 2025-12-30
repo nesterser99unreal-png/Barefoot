@@ -165,10 +165,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_Target: {fileID: 1098965761}
   m_PlayOnAwake: 1
-  m_LoopMode: 1
+  m_LoopMode: 0
   m_Method: 0
-  m_Duration: 15
-  m_MaxSpeed: 4.5153403
+  m_Duration: 3.8
+  m_MaxSpeed: 17.823711
   m_EasingMode: 0
   m_AlignmentMode: 1
   m_ObjectForwardAxis: 2
@@ -972,10 +972,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_Target: {fileID: 1147139503}
   m_PlayOnAwake: 1
-  m_LoopMode: 1
+  m_LoopMode: 0
   m_Method: 0
-  m_Duration: 15
-  m_MaxSpeed: 3.928337
+  m_Duration: 3.8
+  m_MaxSpeed: 21.227732
   m_EasingMode: 0
   m_AlignmentMode: 1
   m_ObjectForwardAxis: 2
@@ -1288,6 +1288,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 9069323457316512391, guid: 163a0bf754bb2a44e80fe173a98b3a87, type: 3}
       insertIndex: -1
       addedObject: {fileID: 1418269728}
+    - targetCorrespondingSourceObject: {fileID: 9069323457316512391, guid: 163a0bf754bb2a44e80fe173a98b3a87, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1418269733}
   m_SourcePrefab: {fileID: 100100000, guid: 163a0bf754bb2a44e80fe173a98b3a87, type: 3}
 --- !u!1 &1147139502
 GameObject:
@@ -1427,6 +1430,78 @@ MonoBehaviour:
       m_Data: []
     m_ObjectData:
       m_Data: []
+  - m_EditModeType: 1
+    m_Knots:
+    - Position:
+        x: -11.460154
+        y: 0
+        z: -18.872318
+      TangentIn:
+        x: 0
+        y: 0
+        z: -3.6431835
+      TangentOut:
+        x: 0
+        y: 0
+        z: 3.6431835
+      Rotation:
+        value:
+          x: 0
+          y: 0.86911863
+          z: 0
+          w: 0.4946036
+    - Position:
+        x: 1.4998466
+        y: 0
+        z: -27.572317
+      TangentIn:
+        x: -0
+        y: -0
+        z: -4.0075917
+      TangentOut:
+        x: 0
+        y: 0
+        z: 2.5110574
+      Rotation:
+        value:
+          x: -1.7527534e-10
+          y: 0.88764083
+          z: -9.093841e-11
+          w: 0.46053624
+    - Position:
+        x: 6.429847
+        y: 0
+        z: -31.212318
+      TangentIn:
+        x: -0
+        y: -0
+        z: -0.6128174
+      TangentOut:
+        x: 0
+        y: 0
+        z: 0.6128174
+      Rotation:
+        value:
+          x: 0
+          y: 0.89274246
+          z: 0
+          w: 0.45056733
+    m_MetaData:
+    - Mode: 2
+      Tension: 0.5
+    - Mode: 0
+      Tension: 0.5
+    - Mode: 0
+      Tension: 0.5
+    m_Closed: 0
+    m_IntData:
+      m_Data: []
+    m_FloatData:
+      m_Data: []
+    m_Float4Data:
+      m_Data: []
+    m_ObjectData:
+      m_Data: []
   m_Knots:
     m_KnotsLink: []
 --- !u!4 &1147139504
@@ -1464,7 +1539,7 @@ MonoBehaviour:
   m_UpdateColliders: 1
   m_Sides: 8
   m_SegmentsPerUnit: 4
-  m_Capped: 1
+  m_Capped: 0
   m_Radius: 0.25
   m_Range: {x: 0, y: 1}
   m_FlipNormals: 0
@@ -1549,10 +1624,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_Target: {fileID: 1147139503}
   m_PlayOnAwake: 1
-  m_LoopMode: 1
+  m_LoopMode: 0
   m_Method: 0
-  m_Duration: 15
-  m_MaxSpeed: 3.928337
+  m_Duration: 3.8
+  m_MaxSpeed: 21.227732
   m_EasingMode: 0
   m_AlignmentMode: 1
   m_ObjectForwardAxis: 2
@@ -1583,19 +1658,43 @@ MonoBehaviour:
     _splineAnimate: {fileID: 220934207}
   - _splineContainer: {fileID: 532199236}
     _splineAnimate: {fileID: 1754531642}
-  _defaultPathIndex: 1
+  _defaultPathIndex: 0
   _animator: {fileID: 1418269732}
+  _rigidbody: {fileID: 1418269733}
   _jumpAnimationClip: {fileID: -203655887218126122, guid: ef326f96197535d4fb4d952bda1b8a3c, type: 3}
-  _baseJumpDistance: 2
-  _minJumpSpeed: 0.5
-  _maxJumpSpeed: 2
-  _useAnimationSpeedControl: 1
   _jumpHeight: 1.5
 --- !u!95 &1418269732 stripped
 Animator:
   m_CorrespondingSourceObject: {fileID: 2339419732324278855, guid: 163a0bf754bb2a44e80fe173a98b3a87, type: 3}
   m_PrefabInstance: {fileID: 1109009480}
   m_PrefabAsset: {fileID: 0}
+--- !u!54 &1418269733
+Rigidbody:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1418269725}
+  serializedVersion: 5
+  m_Mass: 1
+  m_LinearDamping: 0
+  m_AngularDamping: 0.05
+  m_CenterOfMass: {x: 0, y: 0, z: 0}
+  m_InertiaTensor: {x: 1, y: 1, z: 1}
+  m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ImplicitCom: 1
+  m_ImplicitTensor: 1
+  m_UseGravity: 0
+  m_IsKinematic: 0
+  m_Interpolate: 0
+  m_Constraints: 0
+  m_CollisionDetection: 0
 --- !u!1 &1444682865
 GameObject:
   m_ObjectHideFlags: 0
@@ -1676,10 +1775,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_Target: {fileID: 532199236}
   m_PlayOnAwake: 1
-  m_LoopMode: 1
+  m_LoopMode: 0
   m_Method: 0
-  m_Duration: 15
-  m_MaxSpeed: 4.9352427
+  m_Duration: 3.8
+  m_MaxSpeed: 19.481222
   m_EasingMode: 0
   m_AlignmentMode: 1
   m_ObjectForwardAxis: 2
