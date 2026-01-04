@@ -19,9 +19,12 @@ public class LinesRunnerPlayerMovement : MonoBehaviour
     
     private int _currentPathIndex;
     private int _currentSplineIndex;
+    
     private bool _isMoving;
+    private bool _isJumping;
     
     private Tweener _moveTweener;
+    private Sequence _jumpSequence;
 
     private void Awake()
     {
@@ -39,7 +42,7 @@ public class LinesRunnerPlayerMovement : MonoBehaviour
 
     private void Update()
     {
-        if (_currentSplineIndex >= _paths[_currentPathIndex].GetCurrentSplineIndex()) 
+        if (_isJumping || _currentSplineIndex >= _paths[_currentPathIndex].GetCurrentSplineIndex()) 
             return;
         
         _rigidbody.useGravity = true;
@@ -62,12 +65,72 @@ public class LinesRunnerPlayerMovement : MonoBehaviour
         TryTurnToOtherPath(_currentPathIndex + 1);
     }
 
-    public void Jump(CallbackContext context) => 
-        Debug.Log("Jumped");
+    public void Jump(CallbackContext context)
+    {
+        if (_isJumping || _isMoving)
+            return;
+        
+        _isJumping = true;
+        
+        var jumpDuration = _jumpAnimationClip.length;
+        var endPosition = _paths[_currentPathIndex].GetPositionByTime(jumpDuration, _splineAnimate);
+        
+        // Кастомная кривая: очень резкое отталкивание, максимально плавный полет, очень резкое приземление
+        var jumpCurve = new AnimationCurve(
+            new Keyframe(0f, 0f, 0f, 4f),       // Очень резкое отталкивание
+            new Keyframe(0.02f, 0.02f, 2f, 2f), // Резкий переход
+            new Keyframe(0.04f, 0.04f, 1.5f, 1.5f), // Плавный переход
+            new Keyframe(0.07f, 0.07f, 1.2f, 1.2f), // Плавный переход
+            new Keyframe(0.1f, 0.1f, 1f, 1f),   // Плавный переход после отталкивания
+            new Keyframe(0.12f, 0.12f, 0.9f, 0.9f), // Плавный подъем
+            new Keyframe(0.15f, 0.15f, 0.8f, 0.8f), // Плавный подъем
+            new Keyframe(0.18f, 0.18f, 0.75f, 0.75f), // Плавный подъем
+            new Keyframe(0.2f, 0.2f, 0.7f, 0.7f), // Плавный подъем
+            new Keyframe(0.23f, 0.23f, 0.65f, 0.65f), // Плавный подъем
+            new Keyframe(0.25f, 0.25f, 0.6f, 0.6f), // Плавный подъем
+            new Keyframe(0.28f, 0.28f, 0.57f, 0.57f), // Плавный подъем
+            new Keyframe(0.3f, 0.3f, 0.55f, 0.55f), // Плавный подъем
+            new Keyframe(0.33f, 0.33f, 0.52f, 0.52f), // Плавный подъем
+            new Keyframe(0.35f, 0.35f, 0.5f, 0.5f), // Плавный подъем
+            new Keyframe(0.38f, 0.38f, 0.47f, 0.47f), // Плавный подъем
+            new Keyframe(0.4f, 0.4f, 0.45f, 0.45f), // Максимально плавный подъем
+            new Keyframe(0.43f, 0.43f, 0.42f, 0.42f), // Максимально плавный подъем
+            new Keyframe(0.45f, 0.45f, 0.4f, 0.4f), // Максимально плавный подъем
+            new Keyframe(0.48f, 0.48f, 0.4f, 0.4f), // Максимально плавный подъем
+            new Keyframe(0.5f, 0.5f, 0.4f, 0.4f),   // Максимально плавный центр
+            new Keyframe(0.52f, 0.52f, 0.4f, 0.4f), // Максимально плавный спуск
+            new Keyframe(0.55f, 0.55f, 0.4f, 0.4f), // Максимально плавный спуск
+            new Keyframe(0.58f, 0.58f, 0.42f, 0.42f), // Максимально плавный спуск
+            new Keyframe(0.6f, 0.6f, 0.45f, 0.45f), // Максимально плавный спуск
+            new Keyframe(0.63f, 0.63f, 0.47f, 0.47f), // Плавный спуск
+            new Keyframe(0.65f, 0.65f, 0.5f, 0.5f), // Плавный спуск
+            new Keyframe(0.68f, 0.68f, 0.52f, 0.52f), // Плавный спуск
+            new Keyframe(0.7f, 0.7f, 0.55f, 0.55f), // Плавный спуск
+            new Keyframe(0.73f, 0.73f, 0.57f, 0.57f), // Плавный спуск
+            new Keyframe(0.75f, 0.75f, 0.6f, 0.6f), // Плавный спуск
+            new Keyframe(0.78f, 0.78f, 0.65f, 0.65f), // Плавный спуск
+            new Keyframe(0.8f, 0.8f, 0.7f, 0.7f), // Плавный спуск
+            new Keyframe(0.83f, 0.83f, 0.75f, 0.75f), // Плавный спуск
+            new Keyframe(0.85f, 0.85f, 0.9f, 0.9f), // Плавный спуск (подготовка к резкому финишу)
+            new Keyframe(0.88f, 0.88f, 0.95f, 0.95f), // Плавный спуск
+            new Keyframe(0.9f, 0.9f, 1f, 1f),   // Начало резкого финиша (симметрично 0.1f, 0.14f)
+            new Keyframe(0.93f, 0.93f, 1.2f, 1.2f), // Симметрично 0.07f, 0.1f
+            new Keyframe(0.96f, 0.96f, 1.5f, 1.5f), // Симметрично 0.04f, 0.06f
+            new Keyframe(0.98f, 0.98f, 2f, 2f), // Симметрично 0.02f, 0.03f
+            new Keyframe(1f, 1f, 4f, 0f)        // Очень резкое приземление (симметрично 0f, 0f)
+        );
+        
+        _jumpSequence = transform.DOJump(endPosition, _jumpHeight, 1, jumpDuration)
+            .SetEase(jumpCurve)
+            .OnComplete(OnJumpCompleted);
+    }
 
     private void TryTurnToOtherPath(int targetPathIndex)
     {
-        TryKillJumpTweener();
+        if (_isJumping || _isMoving)
+            return;
+        
+        TryKillMoveTweener();
         _isMoving = true;
         
         if (_paths[_currentPathIndex] == null || _paths[_currentPathIndex].SplineAnimate == null ||
@@ -80,7 +143,7 @@ public class LinesRunnerPlayerMovement : MonoBehaviour
 
         var targetLineTransform = _paths[targetPathIndex].SplineAnimate.transform;
 
-        var jumpDuration = _jumpAnimationClip.length;
+        var moveDuration = _jumpAnimationClip.length;
         var startPosition = transform.position;
 
         _animator.SetTrigger(_jumpHash);
@@ -102,7 +165,7 @@ public class LinesRunnerPlayerMovement : MonoBehaviour
                 transform.position = finalPosition;
             },
             1f,
-            jumpDuration
+            moveDuration
         )
         .SetEase(Ease.InOutQuad)
         .OnComplete(() => OnMoveCompleted(targetLineTransform.position, targetPathIndex));
@@ -110,7 +173,7 @@ public class LinesRunnerPlayerMovement : MonoBehaviour
 
     private void OnMoveCompleted(Vector3 finalTargetPosition, int targetPathIndex)
     {
-        TryKillJumpTweener();
+        TryKillMoveTweener();
         transform.position = finalTargetPosition;
         
         _currentPathIndex = targetPathIndex;
@@ -122,12 +185,15 @@ public class LinesRunnerPlayerMovement : MonoBehaviour
         _isMoving = false;
     }
 
-    private void TryKillJumpTweener()
+    private void OnJumpCompleted() => 
+        _isJumping = false;
+
+    private void TryKillMoveTweener()
     {
         if (_moveTweener != null && _moveTweener.IsActive()) 
             _moveTweener.Kill();
     }
 
     private void OnDestroy() => 
-        TryKillJumpTweener();
+        TryKillMoveTweener();
 }

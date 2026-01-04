@@ -167,8 +167,8 @@ MonoBehaviour:
   m_PlayOnAwake: 1
   m_LoopMode: 0
   m_Method: 0
-  m_Duration: 3.8
-  m_MaxSpeed: 17.823711
+  m_Duration: 7
+  m_MaxSpeed: 9.675729
   m_EasingMode: 0
   m_AlignmentMode: 1
   m_ObjectForwardAxis: 2
@@ -974,8 +974,8 @@ MonoBehaviour:
   m_PlayOnAwake: 1
   m_LoopMode: 0
   m_Method: 0
-  m_Duration: 3.8
-  m_MaxSpeed: 21.227732
+  m_Duration: 7
+  m_MaxSpeed: 11.523626
   m_EasingMode: 0
   m_AlignmentMode: 1
   m_ObjectForwardAxis: 2
@@ -1624,10 +1624,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_Target: {fileID: 1147139503}
   m_PlayOnAwake: 1
-  m_LoopMode: 0
+  m_LoopMode: 1
   m_Method: 0
-  m_Duration: 3.8
-  m_MaxSpeed: 21.227732
+  m_Duration: 7
+  m_MaxSpeed: 11.523626
   m_EasingMode: 0
   m_AlignmentMode: 1
   m_ObjectForwardAxis: 2
@@ -1658,7 +1658,7 @@ MonoBehaviour:
     _splineAnimate: {fileID: 220934207}
   - _splineContainer: {fileID: 532199236}
     _splineAnimate: {fileID: 1754531642}
-  _defaultPathIndex: 0
+  _defaultPathIndex: 1
   _animator: {fileID: 1418269732}
   _rigidbody: {fileID: 1418269733}
   _jumpAnimationClip: {fileID: -203655887218126122, guid: ef326f96197535d4fb4d952bda1b8a3c, type: 3}
@@ -1777,8 +1777,8 @@ MonoBehaviour:
   m_PlayOnAwake: 1
   m_LoopMode: 0
   m_Method: 0
-  m_Duration: 3.8
-  m_MaxSpeed: 19.481222
+  m_Duration: 7
+  m_MaxSpeed: 10.5755205
   m_EasingMode: 0
   m_AlignmentMode: 1
   m_ObjectForwardAxis: 2

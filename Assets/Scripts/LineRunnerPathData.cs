@@ -35,6 +35,18 @@ public class LineRunnerPathData
         return _splineContainer.Splines.Count - 1;
     }
 
+    public Vector3 GetPositionByTime(float time, SplineAnimate splineAnimate)
+    {
+        var currentNormalizedTime = splineAnimate.NormalizedTime;
+        var duration = splineAnimate.Duration;
+        
+        var futureNormalizedTime = currentNormalizedTime + time / duration;
+        futureNormalizedTime = Mathf.Clamp01(futureNormalizedTime);
+        
+        // Используем SplineContainer.Evaluate для получения позиции так же, как это делает SplineAnimate
+        return _splineContainer.EvaluatePosition(futureNormalizedTime);
+    }
+
     private float GetLenght()
     {
         _splinePath ??= new SplinePath<Spline>(_splineContainer.Splines);
