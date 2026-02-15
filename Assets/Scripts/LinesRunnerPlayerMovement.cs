@@ -10,44 +10,61 @@ public class LinesRunnerPlayerMovement : MonoBehaviour
     [Header("Movement")]
     [SerializeField] private float _speed = 5f;
 
-    [Header("Jump over gap")]
+    [Header("Jump")]
     [SerializeField] private float _jumpPower = 6f;
     [SerializeField] private float _gravity = 20f;
     [SerializeField] private float _landingRadius = 0.8f;
     [SerializeField] private int _landingSampleCount = 40;
+
+    [Header("Lateral jump")]
+    [SerializeField] private float _lateralJumpMaxDistance = 6f;
+    [SerializeField] private float _lateralJumpDuration = 0.4f;
 
     private float _distanceTraveled;
     private float _cachedTotalLength = -1f;
     private bool _isInAir;
     private Vector3 _jumpVelocity;
     private float _jumpTakeoffNormalizedPosition;
+    
+    private SplineContainer _lateralJumpTargetContainer;
+    private float _lateralJumpLandingNormalizedPosition;
+    private float _lateralJumpStartTime;
 
     private float TotalLength
     {
         get
         {
-            if (_splineContainer == null) return 0f;
+            if (_splineContainer == null) 
+                return 0f;
+            
             if (_cachedTotalLength < 0f)
                 _cachedTotalLength = _splineContainer.CalculateLength();
+            
             return _cachedTotalLength;
         }
     }
 
     public void TurnLeft(InputAction.CallbackContext context)
     {
+        if (_isInAir)
+            return;
         
+        StartLateralJump(-1);
     }
 
     public void TurnRight(InputAction.CallbackContext context)
     {
+        if ( _isInAir)
+            return;
         
+        StartLateralJump(1);
     }
 
     public void Jump(InputAction.CallbackContext context)
     {
         if (_isInAir)
             return;
-        
+
         StartJump();
     }
 
@@ -72,13 +89,90 @@ public class LinesRunnerPlayerMovement : MonoBehaviour
         _jumpVelocity = vectorTangent.normalized * _speed + Vector3.up * _jumpPower;
         _isInAir = true;
     }
+    
+    private void StartLateralJump(int direction)
+    {
+        var normalizedCurrentPosition = Mathf.Clamp01(_distanceTraveled / TotalLength);
+        _splineContainer.Evaluate(normalizedCurrentPosition, out var fromPosition, out var tangent, out var up);
+
+        Vector3 forward = tangent;
+        forward.y = 0f;
+        forward.Normalize();
+
+        var rightDirection = Vector3.Cross(up, tangent).normalized;
+        var lateralDirection = (direction > 0 ? 1 : -1) * rightDirection;
+
+        if (!TryFindPathInDirection(fromPosition, lateralDirection, out var targetContainer, out var landingNormalizedPosition))
+            return;
+
+        Vector3 landingPosition = targetContainer.EvaluatePosition(landingNormalizedPosition);
+        _lateralJumpTargetContainer = targetContainer;
+        _lateralJumpLandingNormalizedPosition = landingNormalizedPosition;
+        _lateralJumpStartTime = Time.time;
+        
+        var gravity = Vector3.down * _gravity;
+        Vector3 vectorFromPosition = fromPosition;
+        var delta = landingPosition - vectorFromPosition;
+        var requiredVelocity = (delta - 0.5f * gravity * _lateralJumpDuration * _lateralJumpDuration) / _lateralJumpDuration;
+        var residual = requiredVelocity - forward * _speed;
+        var lateralSpeed = Vector3.Dot(residual, lateralDirection);
+        var verticalSpeed = Vector3.Dot(residual, Vector3.up);
+        _jumpVelocity = forward * _speed + lateralDirection * lateralSpeed + Vector3.up * verticalSpeed;
+
+        _jumpTakeoffNormalizedPosition = normalizedCurrentPosition;
+        _isInAir = true;
+    }
+    
+    private bool TryFindPathInDirection(Vector3 fromPosition, Vector3 lateralDirection, out SplineContainer targetContainer, out float landingNormalizedPosition)
+    {
+        targetContainer = null;
+        landingNormalizedPosition = 0f;
+        
+        lateralDirection.y = 0f;
+        lateralDirection.Normalize();
+
+        var allContainers = FindObjectsByType<SplineContainer>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
+        var maxDistanceSquare = _lateralJumpMaxDistance * _lateralJumpMaxDistance;
+        var bestDistanceSquare = float.MaxValue;
+
+        foreach (var container in allContainers)
+        {
+            if (container == _splineContainer)
+                continue;
+
+            for (var i = 0; i <= _landingSampleCount; i++)
+            {
+                var normalizedPositionOnSpline = i / (float)_landingSampleCount;
+                Vector3 destinationPoint = container.EvaluatePosition(normalizedPositionOnSpline);
+                var destinationVector = destinationPoint - fromPosition;
+                destinationVector.y = 0f;
+
+                var lateralAmount = Vector3.Dot(destinationVector, lateralDirection);
+                if (lateralAmount <= 0f)
+                    continue;
+
+                var distanceSquare = destinationVector.sqrMagnitude;
+                if (distanceSquare > maxDistanceSquare || distanceSquare >= bestDistanceSquare)
+                    continue;
+
+                bestDistanceSquare = distanceSquare;
+                targetContainer = container;
+                landingNormalizedPosition = normalizedPositionOnSpline;
+            }
+        }
+
+        return targetContainer != null;
+    }
 
     private void UpdateJump()
     {
         _jumpVelocity.y -= _gravity * Time.deltaTime;
         transform.position += _jumpVelocity * Time.deltaTime;
 
-        TryLandOnSpline();
+        if (_lateralJumpTargetContainer != null)
+            TryLandOnSplineAfterLateralJump();
+        else
+            TryLandOnSplineAfterJump();
     }
 
     private void UpdateMovementOnSpline()
@@ -95,10 +189,43 @@ public class LinesRunnerPlayerMovement : MonoBehaviour
         transform.rotation = Quaternion.LookRotation(tangent, up);
     }
 
-    private void TryLandOnSpline()
+    private void TryLandOnSplineAfterLateralJump()
     {
-        var allContainers = FindObjectsByType<SplineContainer>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
         var landingRadiusSquare = _landingRadius * _landingRadius;
+
+        Vector3 landingPoint = _lateralJumpTargetContainer.EvaluatePosition(_lateralJumpLandingNormalizedPosition);
+        var elapsedTime = Time.time - _lateralJumpStartTime;
+        var withinRadius = (transform.position - landingPoint).sqrMagnitude < landingRadiusSquare;
+        var timeReached = elapsedTime >= _lateralJumpDuration;
+
+        if (withinRadius || timeReached)
+        {
+            var bestDistanceSquare = (transform.position - landingPoint).sqrMagnitude;
+            for (var i = 0; i <= _landingSampleCount; i++)
+            {
+                var normalizedPositionOnSpline = i / (float)_landingSampleCount;
+                if (normalizedPositionOnSpline < _lateralJumpLandingNormalizedPosition)
+                    continue;
+                
+                Vector3 destinationPoint = _lateralJumpTargetContainer.EvaluatePosition(normalizedPositionOnSpline);
+                var destinationSquare = (transform.position - destinationPoint).sqrMagnitude;
+                
+                if (destinationSquare < bestDistanceSquare)
+                {
+                    bestDistanceSquare = destinationSquare;
+                    _lateralJumpLandingNormalizedPosition = normalizedPositionOnSpline;
+                }
+            }
+
+            LandOnPath(_lateralJumpTargetContainer, _lateralJumpLandingNormalizedPosition);
+            _lateralJumpTargetContainer = null;
+        }
+    }
+
+    private void TryLandOnSplineAfterJump()
+    {
+        var landingRadiusSquare = _landingRadius * _landingRadius;
+        var allContainers = FindObjectsByType<SplineContainer>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
 
         foreach (var container in allContainers)
         {
@@ -122,20 +249,20 @@ public class LinesRunnerPlayerMovement : MonoBehaviour
 
             if (bestDistanceSquare >= landingRadiusSquare)
                 continue;
-            
-            if (!CanLandOnPath(container, bestNormalizedPositionOnSpline)) 
+
+            if (!CanLandOnPath(container, bestNormalizedPositionOnSpline))
                 continue;
 
             LandOnPath(container, bestNormalizedPositionOnSpline);
             return;
         }
-        
+
         bool CanLandOnPath(SplineContainer container, float bestNormalizedPositionOnSpline)
         {
             var isCurrentContainer = container == _splineContainer;
             var isInvalidDistanceForCurrentContainer =
                 bestNormalizedPositionOnSpline <= _jumpTakeoffNormalizedPosition + _landingRadius;
-        
+
             return !isCurrentContainer || !isInvalidDistanceForCurrentContainer;
         }
     }
@@ -144,7 +271,7 @@ public class LinesRunnerPlayerMovement : MonoBehaviour
     {
         _splineContainer = container;
         InvalidateLengthCache();
-        
+
         _distanceTraveled = Mathf.Clamp01(normalizedPositionOnSpline) * TotalLength;
         _isInAir = false;
     }
