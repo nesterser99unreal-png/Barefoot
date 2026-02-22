@@ -13,5 +13,6 @@ public class DependencyResolver : LifetimeScope
         builder.RegisterComponent(_playerMovement);
         
         builder.Register<PlayerInputResolver>(Lifetime.Singleton);
+        builder.Register<LinesRunnerMovementHandler>(Lifetime.Singleton);
     }
 }

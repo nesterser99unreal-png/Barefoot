@@ -1673,14 +1673,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d7ea8de74f1c45d29993f3d24f978a97, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _splineContainer: {fileID: 2112369111}
-  _speed: 6.03
-  _jumpPower: 6.4
-  _gravity: 20
-  _landingRadius: 0.2
-  _landingSampleCount: 40
-  _lateralJumpMaxDistance: 8.04
-  _lateralJumpDuration: 0.5
+  _startPreset: {fileID: 11400000, guid: 1e218d5164e18644da2d66a2db038076, type: 2}
+  _defaultSplineContainer: {fileID: 1098965761}
 --- !u!1 &1429781022
 GameObject:
   m_ObjectHideFlags: 0
