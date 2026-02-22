@@ -1679,7 +1679,7 @@ MonoBehaviour:
   _gravity: 20
   _landingRadius: 0.2
   _landingSampleCount: 40
-  _lateralJumpMaxDistance: 6
+  _lateralJumpMaxDistance: 8.04
   _lateralJumpDuration: 0.5
 --- !u!1 &1429781022
 GameObject:

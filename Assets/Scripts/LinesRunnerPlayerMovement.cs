@@ -102,22 +102,27 @@ public class LinesRunnerPlayerMovement : MonoBehaviour
         var rightDirection = Vector3.Cross(up, tangent).normalized;
         var lateralDirection = (direction > 0 ? 1 : -1) * rightDirection;
 
-        if (!TryFindPathInDirection(fromPosition, lateralDirection, out var targetContainer, out var landingNormalizedPosition))
-            return;
+        if (TryFindPathInDirection(fromPosition, lateralDirection, out var targetContainer, out var landingNormalizedPosition))
+        {
+            Vector3 landingPosition = targetContainer.EvaluatePosition(landingNormalizedPosition);
+            _lateralJumpTargetContainer = targetContainer;
+            _lateralJumpLandingNormalizedPosition = landingNormalizedPosition;
+            _lateralJumpStartTime = Time.time;
 
-        Vector3 landingPosition = targetContainer.EvaluatePosition(landingNormalizedPosition);
-        _lateralJumpTargetContainer = targetContainer;
-        _lateralJumpLandingNormalizedPosition = landingNormalizedPosition;
-        _lateralJumpStartTime = Time.time;
-        
-        var gravity = Vector3.down * _gravity;
-        Vector3 vectorFromPosition = fromPosition;
-        var delta = landingPosition - vectorFromPosition;
-        var requiredVelocity = (delta - 0.5f * gravity * _lateralJumpDuration * _lateralJumpDuration) / _lateralJumpDuration;
-        var residual = requiredVelocity - forward * _speed;
-        var lateralSpeed = Vector3.Dot(residual, lateralDirection);
-        var verticalSpeed = Vector3.Dot(residual, Vector3.up);
-        _jumpVelocity = forward * _speed + lateralDirection * lateralSpeed + Vector3.up * verticalSpeed;
+            var gravity = Vector3.down * _gravity;
+            Vector3 fromPositionVector = fromPosition;
+            var delta = landingPosition - fromPositionVector;
+            var requiredVelocity = (delta - 0.5f * gravity * _lateralJumpDuration * _lateralJumpDuration) / _lateralJumpDuration;
+            var residual = requiredVelocity - forward * _speed;
+            var lateralSpeed = Vector3.Dot(residual, lateralDirection);
+            var verticalSpeed = Vector3.Dot(residual, Vector3.up);
+            _jumpVelocity = forward * _speed + lateralDirection * lateralSpeed + Vector3.up * verticalSpeed;
+        }
+        else
+        {
+            _lateralJumpTargetContainer = null;
+            _jumpVelocity = forward * _speed + lateralDirection * _jumpPower + Vector3.up * _jumpPower;
+        }
 
         _jumpTakeoffNormalizedPosition = normalizedCurrentPosition;
         _isInAir = true;
@@ -206,14 +211,35 @@ public class LinesRunnerPlayerMovement : MonoBehaviour
                 var normalizedPositionOnSpline = i / (float)_landingSampleCount;
                 if (normalizedPositionOnSpline < _lateralJumpLandingNormalizedPosition)
                     continue;
-                
+
                 Vector3 destinationPoint = _lateralJumpTargetContainer.EvaluatePosition(normalizedPositionOnSpline);
                 var destinationSquare = (transform.position - destinationPoint).sqrMagnitude;
-                
+
                 if (destinationSquare < bestDistanceSquare)
                 {
                     bestDistanceSquare = destinationSquare;
                     _lateralJumpLandingNormalizedPosition = normalizedPositionOnSpline;
+                }
+            }
+
+            const float nearEndThreshold = 0.95f;
+            if (_lateralJumpLandingNormalizedPosition >= nearEndThreshold)
+            {
+                var pathEndPoint = _lateralJumpTargetContainer.EvaluatePosition(1f);
+                Vector3 pathEndVector = pathEndPoint;
+                _lateralJumpTargetContainer.Evaluate(1f, out _, out var pathEndTangent, out _);
+                Vector3 pathEndForward = pathEndTangent;
+                pathEndForward.y = 0f;
+                if (pathEndForward.sqrMagnitude > 0.001f)
+                {
+                    pathEndForward.Normalize();
+                    var toCharacter = transform.position - pathEndVector;
+                    toCharacter.y = 0f;
+                    if (Vector3.Dot(toCharacter, pathEndForward) > 0f)
+                    {
+                        _lateralJumpTargetContainer = null;
+                        return;
+                    }
                 }
             }
 
